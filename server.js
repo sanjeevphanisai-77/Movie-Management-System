@@ -7,8 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || 'localhost';
+const PORT = 3000;
 const DB_PATH = path.join(__dirname, 'data', 'movies.json');
 
 // Ensure database directory exists
@@ -792,6 +791,6 @@ app.get('*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, HOST, () => {
-  console.log(`Movie Management System backend running on http://${HOST}:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Movie Management System backend running on http://0.0.0.0:${PORT}`);
 });

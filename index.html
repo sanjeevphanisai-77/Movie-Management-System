@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Management System</title>
+  <meta name="description" content="A cinematic movie management system for organizing, searching, filtering, and curating your film catalog with full CRUD operations.">
+  <meta property="og:title" content="Movie Management System">
+  <meta property="og:description" content="A cinematic movie management system for organizing, searching, filtering, and curating your film catalog with full CRUD operations.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f59e0b'><path d='M19.82 2H4.18C2.97 2 2 2.97 2 4.18v15.64C2 21.03 2.97 22 4.18 22h15.64c1.21 0 2.18-.97 2.18-2.18V4.18C22 2.97 21.03 2 19.82 2zM7 4h2v3H7V4zm4 0h2v3h-2V4zm4 0h2v3h-2V4zm4 0h1v3h-1V4zM4 4h1v3H4V4zm0 5h16v11H4V9z'/></svg>">
+</head>
+<body>
+
+  <!-- Top Sticky Header -->
+  <header class="header" id="appHeader">
+    <div class="container header-inner">
+      <!-- Logo / Title -->
+      <div class="logo-area" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Movie Management System">
+        <div class="logo-icon-wrapper">
+          <svg class="logo-icon" viewBox="0 0 24 24">
+            <path d="M4 6.2h16c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2v-10c0-1.1.9-2 2-2zm0-2.4l1.8 1.4h3.6L7.6 3.8H4zm7.2 0l1.8 1.4h3.6l-1.8-1.4h-3.6zm7.2 0l1.6 1.2V3.8h-1.6z"/>
+            <polygon points="9.5,10.5 9.5,15.5 14.5,13" fill="#ffffff"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <div class="logo-title">CINE<span>MANAGE</span></div>
+          <div class="logo-subtitle">Movie Management System</div>
+        </div>
+      </div>
+
+      <!-- Header Dynamic Search Bar -->
+      <div class="header-search">
+        <div class="search-input-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input 
+            type="text" 
+            id="headerSearchInput" 
+            placeholder="Search movie title (e.g. Inter, Dark)..." 
+            autocomplete="off"
+            aria-label="Search movies dynamically"
+          />
+          <button type="button" class="clear-search-btn" id="clearSearchBtn" title="Clear search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <button type="button" class="btn-intro-sparkle" id="headerTourBtn" onclick="openWelcomeModal(true)" title="Welcome Tour & Quick Overview">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span>Welcome Tour</span>
+        </button>
+
+        <button type="button" class="btn btn-primary" id="headerAddMovieBtn" title="Add a new movie to catalog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Movie</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="container">
+    
+    <!-- Hero / Stats Bar -->
+    <section class="hero-banner">
+      <div class="hero-stats-row">
+        <div class="stats-group">
+          <div class="stat-pill" title="Total movies in database">
+            <span class="dot dot-movies"></span>
+            <span>Total Movies:</span>
+            <strong id="statTotalMovies">20</strong>
+          </div>
+          <div class="stat-pill" title="Movies marked as favourite">
+            <span class="dot dot-favs"></span>
+            <span>Favourites:</span>
+            <strong id="statFavMovies">5</strong>
+          </div>
+        </div>
+
+        <div class="quick-actions-group">
+          <button type="button" class="btn-text-subtle" id="resetSeedDataBtn" title="Reset catalog to initial 20 seed movies">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; vertical-align:middle; margin-right:4px;">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            Reset Seed Data
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls Toolbar (Search, Filter, Sort, View Modes) -->
+    <section class="controls-toolbar" id="controlsToolbar">
+      <div class="filter-bar-card">
+        
+        <!-- Left Filter Controls -->
+        <div class="filter-left-controls">
+          <!-- View Tabs (All vs Favourites) -->
+          <div class="filter-tab-buttons" role="tablist">
+            <button type="button" class="tab-btn active" id="tabAllMovies" onclick="setFilterTab('all')" role="tab">
+              <span>All Movies</span>
+              <span class="tab-badge" id="tabAllCount">20</span>
+            </button>
+            <button type="button" class="tab-btn" id="tabFavourites" onclick="setFilterTab('favourites')" role="tab">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#e50914" stroke="#e50914" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              <span>Favourites</span>
+              <span class="tab-badge" id="tabFavCount">5</span>
+            </button>
+          </div>
+
+          <!-- Genre Filter Dropdown -->
+          <div class="control-select-wrapper">
+            <label for="genreSelect" class="control-label">Genre:</label>
+            <select id="genreSelect" class="custom-select" aria-label="Filter movies by genre">
+              <option value="all">All Genres</option>
+              <option value="Action">Action</option>
+              <option value="Sci-Fi">Sci-Fi</option>
+              <option value="Drama">Drama</option>
+              <option value="Thriller">Thriller</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Adventure">Adventure</option>
+              <option value="Animation">Animation</option>
+              <option value="Crime">Crime</option>
+            </select>
+          </div>
+
+          <!-- Sort by Rating & Year Dropdown -->
+          <div class="control-select-wrapper">
+            <label for="sortSelect" class="control-label">Sort By:</label>
+            <select id="sortSelect" class="custom-select" aria-label="Sort movies">
+              <option value="rating-desc">Rating: High to Low</option>
+              <option value="rating-asc">Rating: Low to High</option>
+              <option value="year-desc">Release Year: Newest</option>
+              <option value="year-asc">Release Year: Oldest</option>
+              <option value="title-asc">Title: A-Z</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Right Controls: View Switcher -->
+        <div class="filter-right-controls">
+          <div class="view-mode-toggle" title="Switch layout">
+            <button type="button" class="view-mode-btn active" id="viewModeGrid" onclick="setViewMode('grid')" title="Grid View" aria-label="Grid View">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+            </button>
+            <button type="button" class="view-mode-btn" id="viewModeList" onclick="setViewMode('list')" title="List View" aria-label="List View">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Filter Status & Active Tags Bar -->
+      <div class="filter-status-row">
+        <div class="filter-tags" id="activeFilterTags">
+          <!-- Active filter pills populated dynamically -->
+        </div>
+        <div id="filterSummaryText">Showing 20 movies</div>
+      </div>
+    </section>
+
+    <!-- Movies Section Title -->
+    <div class="movies-section-title">
+      <span>Films & Series Catalog</span>
+    </div>
+
+    <!-- Responsive Movie Grid -->
+    <div class="movie-grid" id="movieGrid">
+      <!-- Movie Cards rendered via JavaScript -->
+    </div>
+
+    <!-- Clean Empty State when No Movies Found -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <div class="empty-icon-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <line x1="8" y1="11" x2="14" y2="11"></line>
+        </svg>
+      </div>
+      <h3 class="empty-title">No movies found</h3>
+      <p class="empty-subtitle">We couldn't find any movie matching your current search query or active filter settings. Try clearing the filters or adding a new title.</p>
+      <button type="button" class="btn btn-secondary" id="emptyResetBtn">
+        <span>Reset Filters</span>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- ========================================================================
+       MODAL 0: ATTRACTIVE OPENING WELCOME POP-UP MODAL
+       ======================================================================== -->
+  <div class="welcome-popup-backdrop" id="welcomeModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+    <div class="welcome-popup-card" id="welcomeModalCard">
+      <!-- Glow flares -->
+      <div class="welcome-card-glow"></div>
+      <div class="welcome-card-glow-secondary"></div>
+
+      <!-- Close button -->
+      <button type="button" class="welcome-close-btn" onclick="closeWelcomeModal()" aria-label="Close welcome pop-up" title="Close [Esc]">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Badge -->
+      <div class="welcome-badge-wrap">
+        <div class="welcome-premiere-badge">
+          <span class="welcome-pulse-dot"></span>
+          <span>CineManage Premiere &bull; System Live</span>
+        </div>
+      </div>
+
+      <!-- Title & Subtitle -->
+      <h2 class="welcome-title" id="welcomeTitle">
+        Experience <span>Cinema Management</span>
+      </h2>
+      <p class="welcome-subtitle">
+        Your premier high-performance suite for organizing, searching, filtering, and curating world-class cinema with real-time updates.
+      </p>
+
+      <!-- Feature Showcase Grid -->
+      <div class="welcome-features-grid">
+        <div class="welcome-feature-card">
+          <div class="welcome-feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+              <line x1="7" y1="2" x2="7" y2="22"></line>
+              <line x1="17" y1="2" x2="17" y2="22"></line>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <line x1="2" y1="7" x2="7" y2="7"></line>
+              <line x1="2" y1="17" x2="7" y2="17"></line>
+              <line x1="17" y1="17" x2="22" y2="17"></line>
+              <line x1="17" y1="7" x2="22" y2="7"></line>
+            </svg>
+          </div>
+          <div class="welcome-feature-title">20 Iconic Titles</div>
+          <div class="welcome-feature-desc">Authentic posters, IMDb ratings &amp; metadata</div>
+        </div>
+
+        <div class="welcome-feature-card">
+          <div class="welcome-feature-icon icon-stream">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </div>
+          <div class="welcome-feature-title">Direct Streaming Links</div>
+          <div class="welcome-feature-desc">1-Click re-direct to Netflix, Disney+, Max &amp; more</div>
+        </div>
+
+        <div class="welcome-feature-card">
+          <div class="welcome-feature-icon icon-amber">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+          <div class="welcome-feature-title">Instant Search</div>
+          <div class="welcome-feature-desc">Live title lookup &amp; multi-genre filtering</div>
+        </div>
+
+        <div class="welcome-feature-card">
+          <div class="welcome-feature-icon icon-cyan">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
+          <div class="welcome-feature-title">Full CRUD</div>
+          <div class="welcome-feature-desc">Add, edit, favourite &amp; delete with Node.js sync</div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="welcome-actions-row">
+        <button type="button" class="btn-welcome-primary" id="welcomeExploreBtn" onclick="closeWelcomeModal()">
+          <span>Explore Catalog</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+
+        <button type="button" class="btn-welcome-secondary" onclick="closeWelcomeModal(); openAddMovieModal();">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Movie</span>
+        </button>
+      </div>
+
+      <!-- Welcome footer -->
+      <div class="welcome-footer-row">
+        <label class="welcome-checkbox-label" for="dontShowWelcomeAgain">
+          <input type="checkbox" id="dontShowWelcomeAgain" />
+          <span>Don't show this intro automatically on next visit</span>
+        </label>
+        <div class="welcome-hint-key">
+          <span>Press</span> <kbd class="kbd-badge">Enter</kbd> <span>or</span> <kbd class="kbd-badge">Esc</kbd>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 1: ADD / EDIT MOVIE FORM MODAL
+       ======================================================================== -->
+  <div class="modal-backdrop" id="movieFormModal" role="dialog" aria-modal="true" aria-labelledby="formModalTitle">
+    <div class="modal-container">
+      <button type="button" class="modal-close-btn" onclick="closeFormModal()" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="form-header">
+        <h2 class="form-title" id="formModalTitle">Add New Movie</h2>
+        <p class="form-subtitle">Enter movie details below. All fields with asterisk are mandatory.</p>
+      </div>
+
+      <form id="movieForm" class="movie-form" novalidate>
+        <div class="form-grid">
+          
+          <!-- Movie Title -->
+          <div class="form-group full-width" id="movieTitleGroup">
+            <label class="form-label" for="movieTitleInput">
+              <span>Movie Title <span class="req">*</span></span>
+            </label>
+            <input 
+              type="text" 
+              id="movieTitleInput" 
+              class="form-control" 
+              placeholder="e.g. Interstellar" 
+              required
+            />
+            <span class="form-error-msg">Movie title is required.</span>
+          </div>
+
+          <!-- Genre -->
+          <div class="form-group" id="movieGenreGroup">
+            <label class="form-label" for="movieGenreInput">
+              <span>Genre <span class="req">*</span></span>
+            </label>
+            <select id="movieGenreInput" class="form-control custom-select" required>
+              <option value="">Select Genre...</option>
+              <option value="Action">Action</option>
+              <option value="Sci-Fi">Sci-Fi</option>
+              <option value="Drama">Drama</option>
+              <option value="Thriller">Thriller</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Adventure">Adventure</option>
+              <option value="Animation">Animation</option>
+              <option value="Crime">Crime</option>
+              <option value="Mystery">Mystery</option>
+              <option value="Fantasy">Fantasy</option>
+              <option value="Horror">Horror</option>
+            </select>
+            <span class="form-error-msg">Please select a genre.</span>
+          </div>
+
+          <!-- Language -->
+          <div class="form-group" id="movieLangGroup">
+            <label class="form-label" for="movieLangInput">
+              <span>Language <span class="req">*</span></span>
+            </label>
+            <input 
+              type="text" 
+              id="movieLangInput" 
+              class="form-control" 
+              placeholder="e.g. English, Korean, Hindi, Telugu" 
+              required
+            />
+            <span class="form-error-msg">Language is required.</span>
+          </div>
+
+          <!-- Release Year -->
+          <div class="form-group" id="movieYearGroup">
+            <label class="form-label" for="movieYearInput">
+              <span>Release Year <span class="req">*</span></span>
+            </label>
+            <input 
+              type="number" 
+              id="movieYearInput" 
+              class="form-control" 
+              placeholder="e.g. 2014" 
+              min="1888" 
+              max="2100" 
+              required
+            />
+            <span class="form-error-msg">Enter a valid year (1888 - 2100).</span>
+          </div>
+
+          <!-- Rating -->
+          <div class="form-group" id="movieRatingGroup">
+            <label class="form-label" for="movieRatingInput">
+              <span>Rating (0 to 10) <span class="req">*</span></span>
+            </label>
+            <input 
+              type="number" 
+              id="movieRatingInput" 
+              class="form-control" 
+              placeholder="e.g. 8.7" 
+              min="0" 
+              max="10" 
+              step="0.1" 
+              required
+            />
+            <span class="form-error-msg">Rating must be between 0.0 and 10.0.</span>
+          </div>
+
+          <!-- Duration -->
+          <div class="form-group full-width" id="movieDurationGroup">
+            <label class="form-label" for="movieDurationInput">
+              <span>Duration <span class="req">*</span></span>
+            </label>
+            <input 
+              type="text" 
+              id="movieDurationInput" 
+              class="form-control" 
+              placeholder="e.g. 169 min or 2h 49m" 
+              required
+            />
+            <span class="form-error-msg">Duration is required (e.g. 169 min).</span>
+          </div>
+
+          <!-- Poster URL -->
+          <div class="form-group full-width" id="moviePosterGroup">
+            <label class="form-label" for="moviePosterInput">
+              <span>Poster URL (Optional)</span>
+            </label>
+            <input 
+              type="url" 
+              id="moviePosterInput" 
+              class="form-control" 
+              placeholder="https://... (or leave blank for generated cinematic poster)"
+            />
+            <div class="poster-preview-box">
+              <img id="formPosterPreview" src="" alt="Poster preview" class="poster-preview-img" />
+              <div class="poster-preview-hint">
+                <strong>Live Poster Preview</strong>
+                <p>If left blank or if image fails to load, a custom cinematic poster SVG is dynamically synthesized.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group full-width" id="movieDescGroup">
+            <label class="form-label" for="movieDescInput">
+              <span>Description <span class="req">*</span></span>
+            </label>
+            <textarea 
+              id="movieDescInput" 
+              class="form-control" 
+              placeholder="Brief summary of the movie storyline..." 
+              rows="3" 
+              required
+            ></textarea>
+            <span class="form-error-msg">Description is required.</span>
+          </div>
+
+          <!-- Streaming Platform -->
+          <div class="form-group" id="moviePlatformGroup">
+            <label class="form-label" for="moviePlatformInput">
+              <span>Streaming Platform</span>
+            </label>
+            <select id="moviePlatformInput" class="form-control custom-select">
+              <option value="Netflix">Netflix</option>
+              <option value="Prime Video">Prime Video</option>
+              <option value="Disney+">Disney+</option>
+              <option value="Max">Max</option>
+              <option value="Paramount+">Paramount+</option>
+              <option value="Apple TV">Apple TV</option>
+              <option value="Hulu">Hulu</option>
+              <option value="Peacock">Peacock</option>
+              <option value="YouTube Movies">YouTube Movies</option>
+              <option value="Cinema">Cinema / Theater</option>
+              <option value="Online Streaming">Other Streaming Service</option>
+            </select>
+          </div>
+
+          <!-- Streaming URL (Direct Redirection Link) -->
+          <div class="form-group" id="movieStreamUrlGroup">
+            <label class="form-label" for="movieStreamUrlInput">
+              <span>Streaming Link (Redirection URL)</span>
+            </label>
+            <input 
+              type="url" 
+              id="movieStreamUrlInput" 
+              class="form-control" 
+              placeholder="https://www.netflix.com/title/... (or custom link)" 
+            />
+          </div>
+
+          <!-- Favourite Checkbox -->
+          <div class="form-group full-width" style="flex-direction: row; align-items: center; gap: 10px;">
+            <input type="checkbox" id="movieFavInput" style="width: 18px; height: 18px; accent-color: var(--accent-red); cursor: pointer;" />
+            <label for="movieFavInput" style="font-size: 0.92rem; color: #fff; cursor: pointer;">Mark as Favourite upon saving</label>
+          </div>
+
+        </div>
+
+        <div class="form-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeFormModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="movieFormSubmitBtn">Save Movie</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 2: MOVIE DETAILS VIEW MODAL
+       ======================================================================== -->
+  <div class="modal-backdrop" id="movieDetailsModal" role="dialog" aria-modal="true" aria-labelledby="detailsMovieTitle">
+    <div class="modal-container details-modal-container">
+      <button type="button" class="modal-close-btn" onclick="closeDetailsModal()" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="details-modal-grid">
+        <!-- Large Movie Poster -->
+        <div class="details-poster-wrap">
+          <img id="detailsMoviePoster" src="" alt="Movie Poster" class="details-poster-img" />
+        </div>
+
+        <!-- Movie Details Content -->
+        <div class="details-content-wrap">
+          <div class="details-badge-row">
+            <span class="badge-genre" id="detailsMovieGenre">Sci-Fi</span>
+            <span class="badge-lang" id="detailsMovieLang">English</span>
+            <span class="badge-platform" id="detailsMoviePlatformBadge">Netflix</span>
+          </div>
+
+          <h2 class="details-title" id="detailsMovieTitle">Movie Title</h2>
+
+          <div class="details-meta-grid">
+            <div class="details-rating-tag">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <span id="detailsMovieRating">8.7</span>
+            </div>
+            <div><strong>Year:</strong> <span id="detailsMovieYear">2014</span></div>
+            <div><strong>Duration:</strong> <span id="detailsMovieDuration">169 min</span></div>
+            <div><strong>Platform:</strong> <span id="detailsMoviePlatformName" style="color: #fff; font-weight: 600;">Netflix</span></div>
+          </div>
+
+          <!-- Streaming Redirection CTA Card -->
+          <div class="details-streaming-card" id="detailsStreamingCard">
+            <div class="streaming-card-left">
+              <div class="streaming-card-eyebrow">Direct Streaming Redirection</div>
+              <div class="streaming-card-platform-title">
+                <span>Watch on</span>
+                <span class="platform-highlight" id="detailsStreamPlatformHighlight">Netflix</span>
+              </div>
+            </div>
+            <a 
+              id="detailsWatchRedirectBtn" 
+              href="#" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="btn-watch-stream"
+              title="Click to redirect to streaming platform"
+            >
+              <svg class="play-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <span>Stream Movie</span>
+              <svg class="external-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </a>
+          </div>
+
+          <div class="details-section-label">Storyline &amp; Overview</div>
+          <p class="details-description" id="detailsMovieDesc">
+            Movie storyline description goes here...
+          </p>
+
+          <div class="details-actions-footer">
+            <button type="button" class="btn btn-secondary" id="detailsFavBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+              <span>Mark Favourite</span>
+            </button>
+
+            <button type="button" class="btn btn-secondary" id="detailsEditBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              <span>Edit</span>
+            </button>
+
+            <button type="button" class="btn btn-danger" id="detailsDeleteBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 3: DELETE CONFIRMATION MODAL
+       ======================================================================== -->
+  <div class="modal-backdrop" id="deleteConfirmModal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal-container" style="max-width: 460px;">
+      <div class="delete-modal-content">
+        <div class="delete-icon-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+        </div>
+        <h3 class="delete-modal-title" id="deleteModalTitle">Delete Movie?</h3>
+        <p class="delete-modal-text">
+          Are you sure you want to remove <strong id="deleteMovieTitle">Movie Title</strong> from your catalog? This action cannot be undone.
+        </p>
+        <div class="delete-modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Movie</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>Movie Management System</strong> &bull; Full CRUD Catalog &bull; Node.js Backend
+      </div>
+      <div class="footer-links">
+        <span>Pure HTML5 &bull; CSS3 &bull; JavaScript</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Script -->
+  <script src="/js/app.js"></script>
+</body>
+</html>
